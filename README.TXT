@@ -1,1 +1,1 @@
-Puzzle
+Create a mosaic puzzle from any picture!

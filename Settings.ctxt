@@ -1,0 +1,21 @@
+#BlueJ class context
+comment0.target=Settings
+comment1.params=
+comment1.target=void\ applyDefaults()
+comment2.params=key
+comment2.target=java.lang.String\ get(java.lang.String)
+comment3.params=
+comment3.target=void\ reset()
+comment4.params=
+comment4.target=void\ save()
+comment5.params=key\ value
+comment5.target=void\ set(java.lang.String,\ java.lang.String)
+comment6.params=name
+comment6.target=javax.swing.JMenu\ generateJMenu(java.lang.String)
+comment7.params=e
+comment7.target=void\ actionPerformed(java.awt.event.ActionEvent)
+comment8.params=e
+comment8.target=void\ actionPerformed(java.awt.event.ActionEvent)
+comment9.params=parent
+comment9.target=int\ show(javax.swing.JFrame)
+numComments=10
