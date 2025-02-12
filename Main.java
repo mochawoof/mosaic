@@ -21,20 +21,24 @@ class Main {
     private static boolean showlines;
     private static int performance;
     private static final String acceptedfiles = "png,jpg,jpeg,bmp,wbmp";
+    private static int windowheight = 500;
     
     private static JFrame f;
     
     public static void update() {
         int oldnpiecesx = npiecesx;
         try {
-            npiecesx = (int) Math.sqrt(Integer.parseInt(Settings.get("Difficulty")));
+            npiecesx = (int) Math.sqrt(Integer.parseInt(Settings.get("#Difficulty")));
         } catch (Exception e) {
             npiecesx = 4;
         }
         if (npiecesx <= 0 || npiecesx > 16) {
             npiecesx = 4;
         }
-        if (file != null && oldnpiecesx != npiecesx) {reload();}
+        if (file != null && oldnpiecesx != npiecesx) {
+            reload();
+            shuffle();
+        }
         
         try {
             if (Settings.get("Theme").equals("System")) {
@@ -67,16 +71,12 @@ class Main {
             pieces[rdm] = pieces[i];
             pieces[i] = tmp;
         }
+        f.repaint();
+        savemove();
     }
     
     private static void reload() {
         load(file);
-    }
-
-    private static void loadwarn(File fl) {
-        if (JOptionPane.showConfirmDialog(f, "Are you sure you want to end your current game?", "Confirm", JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION) {
-            load(fl);
-        }
     }
     
     private static void load(File fl) {
@@ -84,12 +84,14 @@ class Main {
             image = ImageIO.read(fl);
             Settings.set(".Last", fl.getAbsolutePath());
             file = fl;
+            double imageasp = ((double) image.getWidth() / image.getHeight());
+            f.setSize((int) (imageasp * windowheight), windowheight);
             
             pieces = new int[npiecesx * npiecesx];
             for (int i = 0; i < pieces.length; i++) {
                 pieces[i] = i;
             }
-            shuffle();
+            
             f.repaint();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -116,7 +118,10 @@ class Main {
                             JMenuItem it = new JMenuItem(sf.getName());
                             it.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
-                                    loadwarn(sf);
+                                    if (askendgame()) {
+                                        load(sf);
+                                        shuffle();
+                                    }
                                 }
                             });
                             categorymenu.add(it);
@@ -125,8 +130,61 @@ class Main {
                     menu.add(categorymenu);
                 }
             }
+            JMenuItem openfolder = new JMenuItem("Open Folder");
+            openfolder.setMnemonic(KeyEvent.VK_O);
+            openfolder.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        Desktop.getDesktop().open(picturesfolder);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+            menu.add(openfolder);
         }
         return menu;
+    }
+    
+    public static boolean askendgame() {
+        if (file != null && file.exists()) {
+            int opt = JOptionPane.showConfirmDialog(f, "Are you sure you want to end your current game?", "Confirm", JOptionPane.WARNING_MESSAGE);
+            if (opt == JOptionPane.OK_OPTION) {
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
+    
+    private static void savemove() {
+        String g = serializegame();
+        Settings.set(".Game", g);
+    }
+    
+    private static String serializegame() {
+        String g = "";
+        for (int p : pieces) {
+            if (!g.equals("")) {
+                g += ",";
+            }
+            g += p;
+        }
+        return g;
+    }
+    
+    private static void loadgame(String game) {
+        String[] splgame = game.split(",");
+        if (splgame.length == pieces.length) {
+            for (int i = 0; i < splgame.length; i++) {
+                int change = pieces[i];
+                try {
+                    change = Integer.parseInt(splgame[i]);
+                } catch (Exception e) {}
+                pieces[i] = change;
+            }
+            f.repaint();
+        }
     }
     
     public static void main(String[] args) {
@@ -154,7 +212,7 @@ class Main {
         f.setJMenuBar(mb);
         
         JMenu gamem = new JMenu("Game");
-        gamem.setMnemonic(KeyEvent.VK_F);
+        gamem.setMnemonic(KeyEvent.VK_G);
         mb.add(gamem);
         
         JMenuItem reshuffle = new JMenuItem("Reshuffle");
@@ -162,7 +220,7 @@ class Main {
         reshuffle.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (file != null) {
-                    reload();
+                    shuffle();
                 }
             }
         });
@@ -191,6 +249,37 @@ class Main {
         JMenu settings = Settings.generateJMenu("Settings");
         settings.setMnemonic(KeyEvent.VK_S);
         mb.add(settings);
+        
+        JMenu help = new JMenu("Help");
+        help.setMnemonic(KeyEvent.VK_H);
+        mb.add(help);
+        
+            JMenuItem howtoplay = new JMenuItem("How To Play");
+            howtoplay.setMnemonic(KeyEvent.VK_H);
+            howtoplay.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    JLabel helplabel = new JLabel(Res.getAsString("res/howtoplay.html"));
+                    
+                    JScrollPane scroll = new JScrollPane(helplabel);
+                    scroll.setPreferredSize(new Dimension(300, 300));
+                    scroll.getVerticalScrollBar().setUnitIncrement(10);
+                    
+                    JOptionPane.showOptionDialog(f, scroll, "How To Play", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK"}, "OK");
+                }
+            });
+            help.add(howtoplay);
+            
+            JMenuItem about = new JMenuItem("About Mosaic");
+            about.setMnemonic(KeyEvent.VK_A);
+            about.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    JOptionPane.showMessageDialog(f, "Mosaic v1\nCasual mosaic puzzle game\nSee LICENSE file for license information.\n\nJava " +
+                     System.getProperty("java.version") + " " + System.getProperty("java.vendor") +
+                      "\n" + System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch"), "About Mosaic", JOptionPane.PLAIN_MESSAGE, new ImageIcon(f.getIconImage()));
+                }
+            });
+            help.add(about);
+            
         
         f.add(new JComponent() {
             {
@@ -234,6 +323,7 @@ class Main {
                             moving = -1;
                             
                             f.repaint();
+                            savemove();
                         }
                     }
                 });
@@ -311,9 +401,12 @@ class Main {
             }
         }, BorderLayout.CENTER);
         
+        // Load saved game
         String last = Settings.get(".Last");
         if (last != null && new File(last).exists()) {
             load(new File(last));
+            
+            loadgame(Settings.get(".Game"));
         }
         
         f.setVisible(true);

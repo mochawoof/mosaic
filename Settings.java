@@ -1,3 +1,4 @@
+// v1.1
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -22,18 +23,24 @@ class Settings {
     public static final int RESET = 2;
     
     // Settings with a . preceding their names will not be shown to the user
+    // Settings with a # preceding their names must be confirmed when shown to the user
     // Underscores will be shown to the user as spaces
     // When generateJMenu is used Yes/No values will be treated as checkboxes
     public static HashMap<String, String[]> defaults = new HashMap<String, String[]>() {{
         put("Theme", new String[] {"System", "Cross-Platform"});
         put("Performance", new String[] {"Fast", "Pretty"});
-        put("Difficulty", new String[] {"16", "4", "64", "256"});
+        put("#Difficulty", new String[] {"16", "4", "64", "256"});
         put("Show_Lines", new String[] {"Yes", "No"});
         put(".Last", new String[] {""});
+        put(".Game", new String[] {""});
     }};
 
     private static void update() {
         Main.update();
+    }
+    
+    private static boolean confirm() {
+        return Main.askendgame();
     }
     
     private static void applyDefaults() {
@@ -91,19 +98,25 @@ class Settings {
             
             if (defaultVals != null && (!key.startsWith(".") || DEBUG)) {
                 if (defaultVals.length == 2 && defaultVals[0].toLowerCase().equals("yes") && defaultVals[1].toLowerCase().equals("no")) {
-                    JCheckBoxMenuItem it = new JCheckBoxMenuItem(key.replace("_", " "));
+                    // Checkbox
+                    JCheckBoxMenuItem it = new JCheckBoxMenuItem(key.replace("_", " ").replace("#", ""));
                     if (Settings.get(key).toLowerCase().equals("yes")) {
                         it.setState(true);
                     }
                     it.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            Settings.set(key, (it.getState() == true) ? "Yes" : "No");
-                            update();
+                            if (key.startsWith("#") ? confirm() : true) {
+                                Settings.set(key, (it.getState() == true) ? "Yes" : "No");
+                                update();
+                            } else {
+                                it.setState(!it.getState());
+                            }
                         }
                     });
                     menu.add(it);
                 } else {
-                    JMenu it = new JMenu(key.replace("_", " "));
+                    // Submenu
+                    JMenu it = new JMenu(key.replace("_", " ").replace("#", ""));
                     for (String s : defaultVals) {
                         JCheckBoxMenuItem opt = new JCheckBoxMenuItem(s);
                         if (Settings.get(key).equals(s)) {
@@ -112,16 +125,20 @@ class Settings {
                         
                         opt.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                Settings.set(key, s);
-                                for (Component c : it.getMenuComponents()) {
-                                    JCheckBoxMenuItem j = (JCheckBoxMenuItem) c;
-                                    if (!j.getText().equals(opt.getText())) {
-                                        j.setState(false);
+                                if (key.startsWith("#") ? confirm() : true) {
+                                    Settings.set(key, s);
+                                    for (Component c : it.getMenuComponents()) {
+                                        JCheckBoxMenuItem j = (JCheckBoxMenuItem) c;
+                                        if (!j.getText().equals(opt.getText())) {
+                                            j.setState(false);
+                                        }
                                     }
+                                    opt.setState(true);
+                                    
+                                    update();
+                                } else {
+                                    opt.setState(!opt.getState());
                                 }
-                                opt.setState(true);
-                                
-                                update();
                             }
                         });
                         
@@ -143,6 +160,7 @@ class Settings {
         
         HashMap<String, JComboBox> boxes = new HashMap<String, JComboBox>();
         
+        boolean mustbeconfirmed = false;
         while (en.hasMoreElements()) {
             String key = (String) en.nextElement();
             
@@ -150,7 +168,12 @@ class Settings {
             
             // Make sure default values exist
             if (defaultVals != null && (!key.startsWith(".") || DEBUG)) {
-                panel.add(new JLabel(key.replace("_", " ")));
+                
+                if (key.startsWith("#")) {
+                    mustbeconfirmed = true;
+                }
+                
+                panel.add(new JLabel(key.replace("_", " ").replace("#", "")));
                             
                 JComboBox comboBox = new JComboBox(defaultVals);
                 comboBox.setEditable(true);
@@ -161,13 +184,13 @@ class Settings {
             }
         }
         
-        int opt = JOptionPane.showOptionDialog(parent, new JScrollPane(panel), "Settings", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel", "Reset"}, "OK");
-
-        if (opt == OK) {
+        int opt = JOptionPane.showOptionDialog(parent, new JScrollPane(panel), "Settings", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel", "Reset"}, "OK");
+        
+        if (opt == OK && mustbeconfirmed ? confirm() : true) {
             for (HashMap.Entry<String, JComboBox> e : boxes.entrySet()) {
                 set(e.getKey().replace(" ", "_"), (String) e.getValue().getSelectedItem());
             }
-        } else if (opt == RESET) {
+        } else if (opt == RESET && mustbeconfirmed ? confirm() : true) {
             reset();
         }
         
