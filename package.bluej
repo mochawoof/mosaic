@@ -1,12 +1,12 @@
 #BlueJ package file
-dependency1.from=Main
-dependency1.to=Settings
+dependency1.from=Settings
+dependency1.to=Main
 dependency1.type=UsesDependency
 dependency2.from=Main
-dependency2.to=Res
+dependency2.to=Settings
 dependency2.type=UsesDependency
-dependency3.from=Settings
-dependency3.to=Main
+dependency3.from=Main
+dependency3.to=Res
 dependency3.type=UsesDependency
 editor.fx.0.height=0
 editor.fx.0.width=0

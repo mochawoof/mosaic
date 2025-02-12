@@ -82,6 +82,23 @@ class Main {
     private static void load(File fl) {
         try {
             image = ImageIO.read(fl);
+            
+            if (image.getWidth() > 1000 || image.getHeight() > 1000) {
+                int w = 1000;
+                int h = 1000;
+                
+                if (image.getWidth() > image.getHeight()) {
+                    h = (int) (((double) image.getHeight() / image.getWidth()) * 1000);
+                } else {
+                    w = (int) (((double) image.getWidth() / image.getHeight()) * 1000);
+                }
+                System.out.println("Resizing image from " + image.getWidth() + "x" + image.getHeight() + " to " + w + "x" + h);
+                
+                Image tempimage = image.getScaledInstance(w, h, Image.SCALE_FAST);
+                image = new BufferedImage(tempimage.getWidth(null), tempimage.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+                image.getGraphics().drawImage(tempimage, 0, 0, null);
+            }
+            
             Settings.set(".Last", fl.getAbsolutePath());
             file = fl;
             double imageasp = ((double) image.getWidth() / image.getHeight());
@@ -130,6 +147,9 @@ class Main {
                     menu.add(categorymenu);
                 }
             }
+            
+            menu.addSeparator();
+            
             JMenuItem openfolder = new JMenuItem("Open Folder");
             openfolder.setMnemonic(KeyEvent.VK_O);
             openfolder.addActionListener(new ActionListener() {
@@ -244,6 +264,7 @@ class Main {
         
         JMenu pictures = generatePicturesJMenu();
         pictures.setMnemonic(KeyEvent.VK_P);
+        
         mb.add(pictures);
         
         JMenu settings = Settings.generateJMenu("Settings");
@@ -273,7 +294,7 @@ class Main {
             about.setMnemonic(KeyEvent.VK_A);
             about.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    JOptionPane.showMessageDialog(f, "Mosaic v1\nCasual mosaic puzzle game\nhttps://github.com/mochawoof/mosaic\n\nJava " +
+                    JOptionPane.showMessageDialog(f, "Mosaic v1.01\nCasual mosaic puzzle game\nhttps://github.com/mochawoof/mosaic\n\nJava " +
                      System.getProperty("java.version") + " " + System.getProperty("java.vendor") +
                       "\n" + System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch"), "About Mosaic", JOptionPane.PLAIN_MESSAGE, new ImageIcon(f.getIconImage()));
                 }
@@ -401,6 +422,8 @@ class Main {
             }
         }, BorderLayout.CENTER);
         
+        f.setVisible(true);
+        
         // Load saved game
         String last = Settings.get(".Last");
         if (last != null && new File(last).exists()) {
@@ -408,7 +431,5 @@ class Main {
             
             loadgame(Settings.get(".Game"));
         }
-        
-        f.setVisible(true);
     }
 }
