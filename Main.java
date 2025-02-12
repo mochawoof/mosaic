@@ -147,22 +147,23 @@ class Main {
                     menu.add(categorymenu);
                 }
             }
-            
-            menu.addSeparator();
-            
-            JMenuItem openfolder = new JMenuItem("Open Folder");
-            openfolder.setMnemonic(KeyEvent.VK_O);
-            openfolder.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        Desktop.getDesktop().open(picturesfolder);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
-            menu.add(openfolder);
         }
+        
+        menu.addSeparator();
+        
+        JMenuItem openfolder = new JMenuItem("Open Folder");
+        openfolder.setMnemonic(KeyEvent.VK_O);
+        openfolder.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Desktop.getDesktop().open(picturesfolder);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        menu.add(openfolder);
+            
         return menu;
     }
     
