@@ -17,7 +17,10 @@ class Main {
     private static Point mouseclickpoint;
     private static Point mouse;
     private static int moving;
-    private static boolean showlines = false;
+    
+    private static boolean showlines;
+    private static int performance;
+    private static final String acceptedfiles = "png,jpg,jpeg,bmp,wbmp";
     
     private static JFrame f;
     
@@ -49,6 +52,12 @@ class Main {
         } else {
             showlines = false;
         }
+
+        if (Settings.get("Performance").equals("Pretty")) {
+            performance = Image.SCALE_SMOOTH;
+        } else {
+            performance = Image.SCALE_FAST;
+        }
     }
     
     private static void shuffle() {
@@ -62,6 +71,12 @@ class Main {
     
     private static void reload() {
         load(file);
+    }
+
+    private static void loadwarn(File fl) {
+        if (JOptionPane.showConfirmDialog(f, "Are you sure you want to end your current game?", "Confirm", JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION) {
+            load(fl);
+        }
     }
     
     private static void load(File fl) {
@@ -81,6 +96,39 @@ class Main {
         }
     }
     
+    private static JMenu generatePicturesJMenu() {
+        JMenu menu = new JMenu("Pictures");
+        File picturesfolder = new File("pictures/");
+        if (!picturesfolder.exists()) {
+            picturesfolder.mkdirs();
+        } else {
+            for (File f : picturesfolder.listFiles()) {
+                if (f.isDirectory()) {
+                    JMenu categorymenu = new JMenu(f.getName());
+                    for (File sf : f.listFiles()) {
+                        boolean accepted = false;
+                        for (String af : acceptedfiles.split(",")) {
+                            if (sf.getName().endsWith("." + af)) {
+                                accepted = true;
+                            }
+                        }
+                        if (accepted) {
+                            JMenuItem it = new JMenuItem(sf.getName());
+                            it.addActionListener(new ActionListener() {
+                                public void actionPerformed(ActionEvent e) {
+                                    loadwarn(sf);
+                                }
+                            });
+                            categorymenu.add(it);
+                        }
+                    }
+                    menu.add(categorymenu);
+                }
+            }
+        }
+        return menu;
+    }
+    
     public static void main(String[] args) {
         file = null;
         image = null;
@@ -92,16 +140,22 @@ class Main {
         f = new JFrame("Mosaic");
         f.setSize(300, 400);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setIconImage(Res.getAsImage("icon.png"));
+        
+        Image icon = Res.getAsImage("res/icon.png");
+        f.setIconImage(icon);
+        
+        Image background = Res.getAsImage("res/background.png");
+        BufferedImage bufferedbackground = new BufferedImage(background.getWidth(null), background.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        bufferedbackground.getGraphics().drawImage(background, 0, 0, null);
         
         update();
         
         JMenuBar mb = new JMenuBar();
         f.setJMenuBar(mb);
         
-        JMenu filem = new JMenu("File");
-        filem.setMnemonic(KeyEvent.VK_F);
-        mb.add(filem);
+        JMenu gamem = new JMenu("Game");
+        gamem.setMnemonic(KeyEvent.VK_F);
+        mb.add(gamem);
         
         JMenuItem reshuffle = new JMenuItem("Reshuffle");
         reshuffle.setMnemonic(KeyEvent.VK_R);
@@ -112,9 +166,9 @@ class Main {
                 }
             }
         });
-        filem.add(reshuffle);
+        gamem.add(reshuffle);
         
-        JMenuItem open = new JMenuItem("Open");
+        /*JMenuItem open = new JMenuItem("Open");
         open.setMnemonic(KeyEvent.VK_O);
         open.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -128,7 +182,11 @@ class Main {
                 }
             }
         });
-        filem.add(open);
+        gamem.add(open);*/
+        
+        JMenu pictures = generatePicturesJMenu();
+        pictures.setMnemonic(KeyEvent.VK_P);
+        mb.add(pictures);
         
         JMenu settings = Settings.generateJMenu("Settings");
         settings.setMnemonic(KeyEvent.VK_S);
@@ -196,9 +254,9 @@ class Main {
                 if (image != null) {
                     BufferedImage simage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
                     Graphics sg = simage.getGraphics();
-                    sg.setColor(Color.WHITE);
-                    sg.fillRect(0, 0, getWidth(), getHeight());
-                    sg.drawImage(image.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH), 0, 0, null);
+                    
+                    sg.drawImage(bufferedbackground.getScaledInstance(getWidth(), getHeight(), Image.SCALE_FAST), 0, 0, null);
+                    sg.drawImage(image.getScaledInstance(getWidth(), getHeight(), performance), 0, 0, null);
                     
                     BufferedImage out = new BufferedImage(simage.getWidth(), simage.getHeight(), BufferedImage.TYPE_INT_ARGB);
                     Graphics outg = out.getGraphics();

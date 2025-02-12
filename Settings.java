@@ -26,10 +26,15 @@ class Settings {
     // When generateJMenu is used Yes/No values will be treated as checkboxes
     public static HashMap<String, String[]> defaults = new HashMap<String, String[]>() {{
         put("Theme", new String[] {"System", "Cross-Platform"});
-        put("Difficulty", new String[] {"4", "16", "64", "256"});
+        put("Performance", new String[] {"Fast", "Pretty"});
+        put("Difficulty", new String[] {"16", "4", "64", "256"});
         put("Show_Lines", new String[] {"Yes", "No"});
         put(".Last", new String[] {""});
     }};
+
+    private static void update() {
+        Main.update();
+    }
     
     private static void applyDefaults() {
         for (HashMap.Entry<String, String[]> e : defaults.entrySet()) {
@@ -93,7 +98,7 @@ class Settings {
                     it.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             Settings.set(key, (it.getState() == true) ? "Yes" : "No");
-                            Main.update();
+                            update();
                         }
                     });
                     menu.add(it);
@@ -116,7 +121,7 @@ class Settings {
                                 }
                                 opt.setState(true);
                                 
-                                Main.update();
+                                update();
                             }
                         });
                         
@@ -166,6 +171,7 @@ class Settings {
             reset();
         }
         
+        update();
         return opt;
     }
 }
