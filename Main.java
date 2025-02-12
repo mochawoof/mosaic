@@ -8,6 +8,8 @@ import java.io.File;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
+import java.util.ArrayList;
+
 class Main {
     private static File file;
     private static BufferedImage image;
@@ -118,6 +120,7 @@ class Main {
     private static JMenu generatePicturesJMenu() {
         JMenu menu = new JMenu("Pictures");
         File picturesfolder = new File("pictures/");
+        ArrayList<File> allpictures = new ArrayList<File>();
         if (!picturesfolder.exists()) {
             picturesfolder.mkdirs();
         } else {
@@ -142,6 +145,7 @@ class Main {
                                 }
                             });
                             categorymenu.add(it);
+                            allpictures.add(sf);
                         }
                     }
                     menu.add(categorymenu);
@@ -150,6 +154,19 @@ class Main {
         }
         
         menu.addSeparator();
+        
+        JMenuItem random = new JMenuItem("Random");
+        random.setMnemonic(KeyEvent.VK_R);
+        random.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (askendgame()) {
+                    int rdm = (int) (((double) Math.random()) * allpictures.size());
+                    load(allpictures.get(rdm));
+                    shuffle();
+                }
+            }
+        });
+        menu.add(random);
         
         JMenuItem openfolder = new JMenuItem("Open Folder");
         openfolder.setMnemonic(KeyEvent.VK_O);
@@ -295,7 +312,7 @@ class Main {
             about.setMnemonic(KeyEvent.VK_A);
             about.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    JOptionPane.showMessageDialog(f, "Mosaic v1.01\nCasual mosaic puzzle game\nhttps://github.com/mochawoof/mosaic\n\nJava " +
+                    JOptionPane.showMessageDialog(f, "Mosaic v1.1\nCasual mosaic puzzle game\nhttps://github.com/mochawoof/mosaic\n\nJava " +
                      System.getProperty("java.version") + " " + System.getProperty("java.vendor") +
                       "\n" + System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch"), "About Mosaic", JOptionPane.PLAIN_MESSAGE, new ImageIcon(f.getIconImage()));
                 }
