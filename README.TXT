@@ -1,1 +1,1 @@
-Create a mosaic puzzle from any picture!
+Casual mosaic puzzle game

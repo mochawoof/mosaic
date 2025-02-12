@@ -273,7 +273,7 @@ class Main {
             about.setMnemonic(KeyEvent.VK_A);
             about.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    JOptionPane.showMessageDialog(f, "Mosaic v1\nCasual mosaic puzzle game\nSee LICENSE file for license information.\n\nJava " +
+                    JOptionPane.showMessageDialog(f, "Mosaic v1\nCasual mosaic puzzle game\nhttps://github.com/mochawoof/mosaic\n\nJava " +
                      System.getProperty("java.version") + " " + System.getProperty("java.vendor") +
                       "\n" + System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch"), "About Mosaic", JOptionPane.PLAIN_MESSAGE, new ImageIcon(f.getIconImage()));
                 }
