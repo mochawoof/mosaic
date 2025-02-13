@@ -41,12 +41,12 @@ class Confetti {
     }
     
     public void draw(JComponent c, Graphics g) {
-        if (time < maxy) {
+        if (time * speed * time * 0.05 < maxy) {
             Random r = new Random(seed);
             for (int i = 0; i < n; i++) {
                 int x = (int) (r.nextDouble() * c.getWidth());
-                int y = (int) (r.nextDouble() * 5 * time) + time;
-                y = (int) ((double) y * speed);
+                int y = (int) ((r.nextDouble() * c.getHeight()) + (time * speed));
+                y *= time * 0.05;
                 
                 Color color = Color.getHSBColor(r.nextFloat(), 1.0f, 1.0f);
                 double angle = r.nextDouble() * 360;
@@ -66,6 +66,7 @@ class Confetti {
             }
         } else {
             done = true;
+            System.out.println("Confetti done");
         }
     }
 }

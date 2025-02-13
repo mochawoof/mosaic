@@ -77,7 +77,7 @@
         }
         
         private static void doconfetti() {
-            confetti = new Confetti((int) (f.getWidth() / 1.5), 3.0, f.getHeight());
+            confetti = new Confetti((int) (f.getWidth() * 0.5), 6.0, f.getHeight());
         }
         
         private static boolean check() {
@@ -259,7 +259,11 @@
                     pieces[i] = change;
                 }
                 f.repaint();
-                timestarted = System.currentTimeMillis();
+                if (!check()) {
+                    timestarted = System.currentTimeMillis();
+                } else {
+                    timestarted = -1;
+                }
             }
         }
         
@@ -365,7 +369,7 @@
                         public void mouseClicked(MouseEvent e) {}
                         
                         public void mousePressed(MouseEvent e) {
-                            if (e.getButton() == MouseEvent.BUTTON1 && image != null) {
+                            if (e.getButton() == MouseEvent.BUTTON1 && image != null && timestarted != -1) {
                                 int w = getWidth() / npiecesx;
                                 int h = getHeight() / npiecesx;
                                 
@@ -494,10 +498,14 @@
             load(new File(last));
             
             loadgame(Settings.get(".Game"));
-            try {
-                timestarted = System.currentTimeMillis() - Integer.parseInt(Settings.get(".Time"));
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (!check()) {
+                try {
+                    timestarted = System.currentTimeMillis() - Integer.parseInt(Settings.get(".Time"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                timestarted = -1;
             }
         }
     }
