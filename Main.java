@@ -77,7 +77,7 @@
         }
         
         private static void doconfetti() {
-            confetti = new Confetti((int) (f.getWidth() * 0.5), 6.0, f.getHeight());
+            confetti = new Confetti((int) (f.getWidth() * 0.5), 1.0, f.getHeight());
         }
         
         private static boolean check() {
@@ -96,9 +96,15 @@
                 pieces[rdm] = pieces[i];
                 pieces[i] = tmp;
             }
-            f.repaint();
-            savemove();
-            timestarted = System.currentTimeMillis();
+            
+            // Prevent shuffling into correct order
+            if (check()) {
+                shuffle();
+            } else {
+                f.repaint();
+                savemove();
+                timestarted = System.currentTimeMillis();
+            }
         }
         
         private static void reload() {
@@ -137,7 +143,7 @@
                 
                 Settings.set(".Last", fl.getAbsolutePath());
                 file = fl;
-                double imageasp = ((double) image.getWidth() / image.getHeight());
+                double imageasp = ((double) image.getHeight() / image.getWidth());
                 f.setSize((int) (imageasp * windowheight), windowheight);
                 
                 pieces = new int[npiecesx * npiecesx];
