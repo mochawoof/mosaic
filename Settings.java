@@ -27,12 +27,13 @@ class Settings {
     // Underscores will be shown to the user as spaces
     // When generateJMenu is used Yes/No values will be treated as checkboxes
     public static HashMap<String, String[]> defaults = new HashMap<String, String[]>() {{
-        put("Theme", new String[] {"System", "Cross-Platform"});
+        put("Theme", new String[] {"System", "Metal", "Nimbus", "CDE/Motif"});
         put("Performance", new String[] {"Fast", "Pretty"});
         put("#Difficulty", new String[] {"16", "4", "64", "256"});
         put("Show_Lines", new String[] {"Yes", "No"});
         put(".Last", new String[] {""});
         put(".Game", new String[] {""});
+        put(".Time", new String[] {""});
     }};
 
     private static void update() {

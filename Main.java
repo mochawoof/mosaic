@@ -29,6 +29,7 @@
         
         private static JFrame f;
         private static Confetti confetti = null;
+        private static long timestarted = -1;
         
         public static void update() {
             int oldnpiecesx = npiecesx;
@@ -45,11 +46,17 @@
                 shuffle();
             }
             
+            // List look and feels
+            // for (javax.swing.UIManager.LookAndFeelInfo l : javax.swing.UIManager.getInstalledLookAndFeels()) {System.out.println(l.getName() + " " + l.getClassName());}
             try {
                 if (Settings.get("Theme").equals("System")) {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } else {
-                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                    for (UIManager.LookAndFeelInfo laf : UIManager.getInstalledLookAndFeels()) {
+                        if (laf.getName().equals(Settings.get("Theme"))) {
+                            UIManager.setLookAndFeel(laf.getClassName());
+                        }
+                    }
                 }
                 SwingUtilities.updateComponentTreeUI(f);
             } catch (Exception e) {
@@ -91,6 +98,7 @@
             }
             f.repaint();
             savemove();
+            timestarted = System.currentTimeMillis();
         }
         
         private static void reload() {
@@ -101,10 +109,20 @@
             try {
                 image = ImageIO.read(fl);
                 
-                if (image.getWidth() > 1000 || image.getHeight() > 1000) {
-                    int w = 1000;
-                    int h = 1000;
-                    
+                int w = -1;
+                int h = -1;
+                boolean shouldresize = false;
+                if (image.getWidth() > 1000 || image.getHeight() > 1000 && performance == Image.SCALE_SMOOTH) {
+                    shouldresize = true;
+                    w = 1000;
+                    h = 1000;
+                } else if (image.getWidth() > 500 || image.getHeight() > 500) {
+                    shouldresize = true;
+                    w = 500;
+                    h = 500;
+                }
+
+                if (shouldresize) {
                     if (image.getWidth() > image.getHeight()) {
                         h = (int) (((double) image.getHeight() / image.getWidth()) * 1000);
                     } else {
@@ -112,7 +130,7 @@
                     }
                     System.out.println("Resizing image from " + image.getWidth() + "x" + image.getHeight() + " to " + w + "x" + h);
                     
-                    Image tempimage = image.getScaledInstance(w, h, Image.SCALE_FAST);
+                    Image tempimage = image.getScaledInstance(w, h, Image.SCALE_SMOOTH);
                     image = new BufferedImage(tempimage.getWidth(null), tempimage.getHeight(null), BufferedImage.TYPE_INT_ARGB);
                     image.getGraphics().drawImage(tempimage, 0, 0, null);
                 }
@@ -214,6 +232,7 @@
         private static void savemove() {
             String g = serializegame();
             Settings.set(".Game", g);
+            Settings.set(".Time", (System.currentTimeMillis() - timestarted) + "");
         }
         
         private static String serializegame() {
@@ -234,10 +253,13 @@
                     int change = pieces[i];
                     try {
                         change = Integer.parseInt(splgame[i]);
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     pieces[i] = change;
                 }
                 f.repaint();
+                timestarted = System.currentTimeMillis();
             }
         }
         
@@ -318,6 +340,22 @@
                     }
                 });
                 help.add(about);
+                
+            JMenu time = new JMenu("0:00");
+            mb.add(Box.createGlue());
+            mb.add(time);
+
+            Timer timer = new Timer(200, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (timestarted != -1) {
+                        long diff = System.currentTimeMillis() - timestarted;
+                        int min = (int) ((diff / 1000) / 60);
+                        int sec = (int) ((diff / 1000) - (min * 60));
+                        time.setText(min + ":" + ((sec <= 9) ? "0" + sec : sec));
+                    }
+                }
+            });
+            timer.start();
             
             f.add(new JComponent() {
                 {
@@ -358,6 +396,7 @@
                                                                 
                                 if (moving != movedto && check()) {
                                     doconfetti();
+                                    timestarted = -1;
                                 }
                                 
                                 mouse = null;
@@ -455,6 +494,11 @@
             load(new File(last));
             
             loadgame(Settings.get(".Game"));
+            try {
+                timestarted = System.currentTimeMillis() - Integer.parseInt(Settings.get(".Time"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
